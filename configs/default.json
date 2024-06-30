@@ -1,0 +1,21 @@
+{
+  "name": "pdf-service",
+  "engine": "chromedp",
+  "concurrency": 4,
+  "log": {
+    "mode": "WARNING"
+  },
+  "kafka": {
+    "enabled": true,
+    "group": {
+      "id": "pdfServiceGroup"
+    },
+    "host": "kafka:9092",
+    "createCousumerTopics": false,
+    "topic": {
+      "requests": "PdfRequests",
+      "responses": "PdfResponses"
+    }
+  }
+
+}

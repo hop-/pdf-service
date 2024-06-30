@@ -1,0 +1,8 @@
+{
+  "concurrency": "PDF_SERVICE_CONCURRENCY",
+  "kafka": {
+    "enabled": "KAFKA_ENABLED",
+    "host": "KAFKA_HOST"
+  },
+  "engine": "REPORT_SERVICE_ENGINE"
+}

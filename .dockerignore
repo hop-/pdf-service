@@ -1,0 +1,8 @@
+report-generator-service
+report-generator-service.exe
+Dockerfile
+.env*
+.git*
+bin
+tests
+build
