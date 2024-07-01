@@ -1,16 +1,16 @@
 FROM debian:bookworm AS main
 ENV HOST_CONFIG_DIR=configs
-# RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb \
-#     && apt-get update \
-#     && apt-get install -fy ./wkhtmltox_0.12.6.1-2.bullseye_amd64.deb \
-#     && rm -rf ./wkhtmltox_0.12.6.1-2.bullseye_amd64.deb \
-#     && apt-get clean -y \
-#     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
-    && apt install wget -y \
+    && apt-get install wget -y \
     && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && apt-get install -y ./google-chrome-stable_current_amd64.deb \
+    && apt-get install ./google-chrome-stable_current_amd64.deb -y \
     && rm -rf google-chrome-stable_current_amd64.deb \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+    && apt-get update \
+    && apt-get install -fy ./wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+    && rm -rf ./wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -22,7 +22,8 @@ RUN apt update \
 WORKDIR /build
 COPY go.mod .
 COPY go.sum .
-RUN go mod download
+COPY Makefile .
+RUN make setup
 COPY . .
 
 FROM dev-build as dev

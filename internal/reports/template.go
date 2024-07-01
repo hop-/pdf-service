@@ -22,7 +22,6 @@ type Data struct {
 
 type Config struct {
 	Name      string   `json:"name"`
-	DataType  string   `json:"dataType"`
 	Cover     string   `json:"cover"`
 	Templates []string `json:"templates"`
 	Style     string   `json:"style"`
@@ -32,7 +31,6 @@ type Config struct {
 
 type Template struct {
 	name      string
-	dataType  string
 	context   Context
 	coverTmpl *template.Template
 	tmpl      *template.Template
@@ -182,7 +180,6 @@ func initTemplate(templateDir string, config *Config) (*Template, error) {
 
 	t := Template{
 		name:      config.Name,
-		dataType:  config.DataType,
 		context:   NewContext(pwd, templateDir),
 		coverTmpl: coverTmpl,
 		tmpl:      tmpl,
@@ -212,8 +209,8 @@ func NewTemplate(name string) (*Template, error) {
 }
 
 func (t *Template) GenerateCoverPage(marshaledData []byte) ([]byte, error) {
-	data := data.GetDataTypeOf(t.dataType)
-	err := json.Unmarshal(marshaledData, data)
+	var data data.GeneralData
+	err := json.Unmarshal(marshaledData, &data)
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +223,7 @@ func (t *Template) GenerateCoverPage(marshaledData []byte) ([]byte, error) {
 }
 
 func (t *Template) GenerateContent(marshaledData []byte) ([]byte, error) {
-	data := data.GetDataTypeOf(t.dataType)
+	var data data.GeneralData
 	err := json.Unmarshal(marshaledData, &data)
 	if err != nil {
 		return nil, err

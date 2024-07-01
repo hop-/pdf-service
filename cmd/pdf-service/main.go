@@ -53,7 +53,7 @@ func main() {
 
 	logMode, err := goconfig.Get[string]("log.mode")
 	if err != nil {
-		mode := "WARNING"
+		mode := "INFO"
 		fmt.Printf("Failed to get log mode default is %s\n", mode)
 		logMode = &mode
 	}

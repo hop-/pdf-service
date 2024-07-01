@@ -1,9 +1,10 @@
 {
+  "root": "./",
   "name": "pdf-service",
   "engine": "chromedp",
   "concurrency": 4,
   "log": {
-    "mode": "WARNING"
+    "mode": "INFO"
   },
   "kafka": {
     "enabled": true,

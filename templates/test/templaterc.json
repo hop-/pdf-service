@@ -1,6 +1,5 @@
 {
   "name": "test",
-  "dataType": "TestData",
   "cover": "cover.go.html",
   "templates": ["main.go.html"],
   "style": "styles.css",

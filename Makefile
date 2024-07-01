@@ -24,10 +24,14 @@ ifeq ($(shell test $(NOCOLORS) -ge 8 2> /dev/null; echo $$?), 0)
     WHITE := $(shell tput setaf 7)
 endif
 
-_default: _print_info _make_out_dir $(execable)
+_default: _print_info _make_out_dir setup $(execable)
 	@echo -e "$(GREEN)Compiled.$(RCOLOR)"
 
-.PHONY: build test clean
+.PHONY: setup build test clean
+
+setup:
+	@echo -e "$(BOLD)$(MAGENTA)go mod download$(RCOLOR)"
+	@go mod download
 
 build:
 	@$(MAKE) --no-print-directory $(MAKEFILE)
@@ -56,6 +60,7 @@ help info:
 	@echo -e "\nMakefile to compile $(GREEN)$(execable)$(RCOLOR)\n"
 	@echo -e "------$(CYAN) Use the following targets $(RCOLOR)-----------------"
 	@echo -e "$(MAGENTA)<None>$(RCOLOR) | $(CYAN)build$(RCOLOR)\n\tto make the $(BOLD)$(GREEN)$(execable)$(RCOLOR)."
+	@echo -e "$(CYAN)setup$(RCOLOR)\n\tto setup to the build."
 	@echo -e "$(CYAN)test$(RCOLOR)\n\tto run tests."
 	@echo -e "$(CYAN)clean$(RCOLOR)\n\tto cleanup."
 	@echo -e "$(CYAN)help$(RCOLOR) | $(CYAN)info$(RCOLOR)\n\tto type this message."

@@ -1,4 +1,5 @@
 {
+  "root": "PDF_SERVICE_ROOT",
   "concurrency": "PDF_SERVICE_CONCURRENCY",
   "kafka": {
     "enabled": "KAFKA_ENABLED",
