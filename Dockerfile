@@ -28,6 +28,8 @@ COPY . .
 
 FROM dev-build as dev
 COPY --from=main / /
+ENV HOST_ENV=development
+ENV HOST_CONFIG_DIR=configs
 CMD ["go", "run", "./cmd/pdf-service/main.go"]
 
 FROM dev-build AS prod-build
@@ -38,4 +40,5 @@ WORKDIR /etc/pdf-service
 COPY --from=prod-build /build/templates ./templates
 COPY --from=prod-build /build/configs ./configs
 COPY --from=prod-build /build/bin/pdf-service /usr/local/bin
+ENV HOST_ENV=production
 CMD ["pdf-service"]

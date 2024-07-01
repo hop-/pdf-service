@@ -7,7 +7,7 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20240626232640-f933b107c653
 	github.com/chromedp/chromedp v0.9.5
 	github.com/confluentinc/confluent-kafka-go/v2 v2.4.0
-	github.com/hop-/goconfig v1.1.0
+	github.com/hop-/goconfig v1.1.1
 	github.com/hop-/golog v1.1.0
 )
 

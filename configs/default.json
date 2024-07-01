@@ -6,10 +6,19 @@
   "log": {
     "mode": "INFO"
   },
+  "http": {
+    "enabled": true,
+    "port": 3000,
+    "secure": {
+      "enabled": false,
+      "keyFile": "cert.key",
+      "certFile": "cert.crt"
+    }
+  },
   "kafka": {
     "enabled": true,
     "group": {
-      "id": "pdfServiceGroup"
+      "id": "pdfServiceRequestsGroup"
     },
     "host": "kafka:9092",
     "createCousumerTopics": false,
@@ -18,5 +27,4 @@
       "responses": "PdfResponses"
     }
   }
-
 }

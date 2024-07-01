@@ -1,9 +1,23 @@
 {
   "root": "PDF_SERVICE_ROOT",
   "concurrency": "PDF_SERVICE_CONCURRENCY",
+  "http": {
+    "enabled": "PDF_SERVICE_HTTP_ENABLED",
+    "port": "PDF_SERVICE_HTTP_PORT",
+    "secure": {
+      "enabled": "PDF_SERVICE_HTTPS",
+      "keyFile": "PDF_SERVICE_KEY_FILE",
+      "certFile": "PDF_SERVICE_CERT_FILE"
+    }
+  },
   "kafka": {
-    "enabled": "KAFKA_ENABLED",
-    "host": "KAFKA_HOST"
+    "enabled": "PDF_SERVICE_KAFKA_ENABLED",
+    "host": "PDF_SERVICE_KAFKA_HOST",
+    "createCousumerTopics": "PDF_SERVICE_CREATE_CONSUMER_TOPICS",
+    "topic": {
+      "requests": "PDF_SERVICE_KAFKA_REQUESTS_TOPIC",
+      "responses": "PDF_SERVICE_KAFKA_RESPONSES_TOPICs"
+    }
   },
   "engine": "REPORT_SERVICE_ENGINE"
 }

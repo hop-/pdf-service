@@ -10,14 +10,36 @@ import (
 	"github.com/hop-/pdf-service/internal/kafka"
 )
 
-func getKafkaOptions() (bool, *string, *string, bool, *string, *string) {
-	enabled, err := goconfig.Get[bool]("kafka.enabled")
+func getHttpOptions() (bool, *int, bool, *string, *string) {
+	enabled, err := goconfig.Get[bool]("http.enabled")
 	if err != nil {
 		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
 
-	if !*enabled {
-		return false, nil, nil, false, nil, nil
+	port, err := goconfig.Get[int]("http.port")
+	if err != nil {
+		golog.Fatalf("Failed to get configuration %s", err.Error())
+	}
+	secure, err := goconfig.Get[bool]("http.secure.enabled")
+	if err != nil {
+		golog.Fatalf("Failed to get configuration %s", err.Error())
+	}
+	key, err := goconfig.Get[string]("http.secure.keyFile")
+	if err != nil {
+		golog.Fatalf("Failed to get configuration %s", err.Error())
+	}
+	cert, err := goconfig.Get[string]("http.secure.certFile")
+	if err != nil {
+		golog.Fatalf("Failed to get configuration %s", err.Error())
+	}
+
+	return *enabled, port, *secure, key, cert
+}
+
+func getKafkaOptions() (bool, *string, *string, bool, *string, *string) {
+	enabled, err := goconfig.Get[bool]("kafka.enabled")
+	if err != nil {
+		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
 
 	kafkaHost, err := goconfig.Get[string]("kafka.host")
@@ -41,7 +63,7 @@ func getKafkaOptions() (bool, *string, *string, bool, *string, *string) {
 		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
 
-	return true, kafkaHost, kafkaConsumerGroupId, *createConsumerTopics, requestsTopic, responsesTopic
+	return *enabled, kafkaHost, kafkaConsumerGroupId, *createConsumerTopics, requestsTopic, responsesTopic
 }
 
 func main() {
@@ -76,6 +98,12 @@ func main() {
 		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
 
+	httpIsEnabled,
+		httpPort,
+		httpsIsEnabled,
+		keyFile,
+		certFile := getHttpOptions()
+
 	kafkaIsEnabled,
 		kafkaHost,
 		kafkaConsumerGroupId,
@@ -83,12 +111,23 @@ func main() {
 		requestsTopic,
 		responsesTopic := getKafkaOptions()
 
+	if !kafkaIsEnabled && !httpIsEnabled {
+		golog.Fatalf("At least one of the services should be enabled")
+	}
+
 	// Create App
 	app := app.NewApp(app.Options{
-		EngineType:     *engineType,
-		Concurrency:    *concurrency,
-		KafkaIsEnabled: kafkaIsEnabled,
+		EngineType:  *engineType,
+		Concurrency: *concurrency,
+		Http: app.HttpOptions{
+			Enabled: httpIsEnabled,
+			Port:    *httpPort,
+			Secure:  httpsIsEnabled,
+			Cert:    *certFile,
+			Key:     *keyFile,
+		},
 		Kafka: app.KafkaOptions{
+			Enabled:         kafkaIsEnabled,
 			Host:            *kafkaHost,
 			ConsumerGroupId: *kafkaConsumerGroupId,
 			RequestsTopic:   *requestsTopic,

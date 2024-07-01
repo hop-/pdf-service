@@ -151,8 +151,8 @@ github.com/hashicorp/go-multierror v1.1.1 h1:H5DkEtf6CXdFp0N0Em5UCwQpXMWke8IA0+l
 github.com/hashicorp/go-multierror v1.1.1/go.mod h1:iw975J/qwKPdAO1clOe2L8331t/9/fmwbPZ6JB6eMoM=
 github.com/hashicorp/go-version v1.6.0 h1:feTTfFNnjP967rlCxM/I9g701jU+RN74YKx2mOkIeek=
 github.com/hashicorp/go-version v1.6.0/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=
-github.com/hop-/goconfig v1.1.0 h1:np2UHaiGMO8wqwJ2+v7Ca9M5pjPy6aGDlCjV0QK3IaY=
-github.com/hop-/goconfig v1.1.0/go.mod h1:TfKTQ4yIKU11w51YIH6e8UcjOGsYVKPAtd5gn6T6S44=
+github.com/hop-/goconfig v1.1.1 h1:cg8RtZie4N3LiwGUVJdREVrZGn2fdMZUIRdUfHLwEMg=
+github.com/hop-/goconfig v1.1.1/go.mod h1:TfKTQ4yIKU11w51YIH6e8UcjOGsYVKPAtd5gn6T6S44=
 github.com/hop-/golog v1.1.0 h1:JMcn/VoA7d2Vh44Z+hnGSvMG7mVdJiA/tRo4/wkjq3U=
 github.com/hop-/golog v1.1.0/go.mod h1:8yAxFbyFX1UCpxyXv7JnZ2aMCks2Ys5k68iTeT7EI04=
 github.com/imdario/mergo v0.3.16 h1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=

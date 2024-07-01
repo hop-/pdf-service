@@ -5,7 +5,7 @@ const (
 	ResponseStatusFailed = "failed"
 )
 
-type ReportResponse struct {
+type KafkaResponse struct {
 	Id      string `json:"id"`
 	Status  string `json:"status"`
 	Content string `json:"content"`

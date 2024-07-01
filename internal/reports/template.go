@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/hop-/golog"
-	"github.com/hop-/pdf-service/internal/reports/data"
 )
 
 var reportTemplates map[string]*Template
@@ -209,7 +208,7 @@ func NewTemplate(name string) (*Template, error) {
 }
 
 func (t *Template) GenerateCoverPage(marshaledData []byte) ([]byte, error) {
-	var data data.GeneralData
+	var data GeneralData
 	err := json.Unmarshal(marshaledData, &data)
 	if err != nil {
 		return nil, err
@@ -223,7 +222,7 @@ func (t *Template) GenerateCoverPage(marshaledData []byte) ([]byte, error) {
 }
 
 func (t *Template) GenerateContent(marshaledData []byte) ([]byte, error) {
-	var data data.GeneralData
+	var data GeneralData
 	err := json.Unmarshal(marshaledData, &data)
 	if err != nil {
 		return nil, err

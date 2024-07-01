@@ -1,3 +1,3 @@
-package data
+package reports
 
 type GeneralData map[string]any
