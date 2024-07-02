@@ -1,46 +1,79 @@
-package app
+package services
 
 import (
 	"github.com/hop-/golog"
+	"github.com/hop-/pdf-service/internal/generators"
 	"github.com/hop-/pdf-service/internal/kafka"
 )
 
-func (a *App) startKafka() {
-	defer a.wg.Done()
+type KafkaRequest struct {
+	Type string         `json:"type"`
+	Id   string         `json:"id"`
+	Data map[string]any `json:"data"`
+}
+
+type KafkaResponse struct {
+	Id      string `json:"id"`
+	Status  string `json:"status"`
+	Content string `json:"content"`
+}
+
+const (
+	ResponseStatusPassed = "passed"
+	ResponseStatusFailed = "failed"
+)
+
+type KafkaService struct {
+	consumer  *kafka.Consumer
+	producer  *kafka.Producer
+	isRunning bool
+	generator *generators.ConcurrentPdfGenerator
+}
+
+func NewKafkaService(
+	host string,
+	consumerGroupId string,
+	requestsTopic string,
+	responsesTopic string,
+	generator *generators.ConcurrentPdfGenerator,
+) *KafkaService {
 	// Create Consumer
 	consumerOptions := kafka.ConsumerOptions{
-		Host:    a.options.Kafka.Host,
-		GroupId: &a.options.Kafka.ConsumerGroupId,
-		Topics:  []string{a.options.Kafka.RequestsTopic},
+		Host:    host,
+		GroupId: &consumerGroupId,
+		Topics:  []string{requestsTopic},
 	}
+
 	consumer, err := kafka.NewConsumer(&consumerOptions)
 	if err != nil {
 		golog.Fatalf("Failed to create kafka consumer: %s", err.Error())
 	}
-	// Close consumer on exit
-	a.OnShutdown(func() {
-		consumer.Close()
-	})
-	a.consumer = consumer
 
 	// Create Producer
 	producerOptions := kafka.ProducerOptions{
-		Host:  a.options.Kafka.Host,
-		Topic: a.options.Kafka.ResponsesTopic,
+		Host:  host,
+		Topic: responsesTopic,
 	}
+
 	prodcuer, err := kafka.NewProducer(&producerOptions)
 	if err != nil {
 		golog.Fatalf("Failed to create kafka producer: %s", err.Error())
 	}
-	a.OnShutdown(func() {
-		prodcuer.Close()
-	})
-	a.producer = prodcuer
 
+	return &KafkaService{
+		consumer:  consumer,
+		producer:  prodcuer,
+		isRunning: false,
+		generator: generator,
+	}
+}
+
+func (s *KafkaService) Start() {
+	s.isRunning = true
 	golog.Info("Listening for Kafka messages")
 	// Message gethering loop
-	for a.isRunning {
-		message, err := consumer.ReceiveUntil()
+	for s.isRunning {
+		message, err := s.consumer.ReceiveUntil()
 		if err != nil {
 			golog.Errorf("Failed to read message: %s", err.Error())
 			continue
@@ -65,13 +98,14 @@ func (a *App) startKafka() {
 
 			// Generate report
 			status := ResponseStatusPassed
-			content, err := a.generateReport(req, a.options.EngineType)
+
+			content, err := s.generator.Generate(req.Type, req.Data)
 			if err != nil {
 				status = ResponseStatusFailed
 				golog.Errorf("Failed to generate report: %s", err)
 			}
 
-			err = a.sendKafkaResponse(req.Id, status, content)
+			err = s.send(req.Id, status, content)
 			if err != nil {
 				golog.Errorf("Failed to send response via kafka %s", err.Error())
 			}
@@ -81,7 +115,21 @@ func (a *App) startKafka() {
 	}
 }
 
-func (a *App) sendKafkaResponse(requestId string, status string, content string) error {
+func (s *KafkaService) Stop() {
+	s.isRunning = false
+	// Close consumer on exit
+	if s.consumer != nil {
+		s.consumer.Close()
+		s.consumer = nil
+	}
+	// Close producer on exit
+	if s.producer != nil {
+		s.producer.Close()
+		s.producer = nil
+	}
+}
+
+func (s *KafkaService) send(requestId string, status string, content string) error {
 	res := KafkaResponse{
 		Id:      requestId,
 		Status:  status,
@@ -93,7 +141,7 @@ func (a *App) sendKafkaResponse(requestId string, status string, content string)
 		return err
 	}
 
-	err = a.producer.Send(msg)
+	err = s.producer.Send(msg)
 	if err != nil {
 		return err
 	}

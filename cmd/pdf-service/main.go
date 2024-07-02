@@ -10,13 +10,13 @@ import (
 	"github.com/hop-/pdf-service/internal/kafka"
 )
 
-func getHttpOptions() (bool, *int, bool, *string, *string) {
+func getHttpOptions() (bool, *uint16, bool, *string, *string) {
 	enabled, err := goconfig.Get[bool]("http.enabled")
 	if err != nil {
 		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
 
-	port, err := goconfig.Get[int]("http.port")
+	port, err := goconfig.Get[uint16]("http.port")
 	if err != nil {
 		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
@@ -66,6 +66,21 @@ func getKafkaOptions() (bool, *string, *string, bool, *string, *string) {
 	return *enabled, kafkaHost, kafkaConsumerGroupId, *createConsumerTopics, requestsTopic, responsesTopic
 }
 
+func createKafkaConsumerTopics(host string, topic string) {
+	kafkaOptions := kafka.UtilsOptions{
+		Host: host,
+	}
+
+	kafkaUtils, err := kafka.NewUtils(&kafkaOptions)
+	if err != nil {
+		golog.Fatalf("Faild to connect to the kafka %s", err.Error())
+	}
+	err = kafkaUtils.CreateTopics([]string{topic}, 50) // partition number is hardcoded
+	if err != nil {
+		golog.Warningf("Failed to create kafka topics %s", err.Error())
+	}
+}
+
 func main() {
 	// Load config
 	if err := goconfig.Load(); err != nil {
@@ -98,6 +113,12 @@ func main() {
 		golog.Fatalf("Failed to get configuration %s", err.Error())
 	}
 
+	// Create app options
+	opts := []app.OptionModifier{
+		app.WithEngine(*engineType),
+		app.WithConcurrency(*concurrency),
+	}
+
 	httpIsEnabled,
 		httpPort,
 		httpsIsEnabled,
@@ -115,39 +136,32 @@ func main() {
 		golog.Fatalf("At least one of the services should be enabled")
 	}
 
+	// Add kafka if enabled
+	if kafkaIsEnabled {
+		opts = append(opts, app.WithKafka(
+			*kafkaHost,
+			*kafkaConsumerGroupId,
+			*requestsTopic,
+			*responsesTopic,
+		))
+	}
+
+	// Add http if enabled
+	if httpIsEnabled {
+		opts = append(opts, app.WithHttp(
+			*httpPort,
+			httpsIsEnabled,
+			*certFile,
+			*keyFile,
+		))
+	}
+
 	// Create App
-	app := app.NewApp(app.Options{
-		EngineType:  *engineType,
-		Concurrency: *concurrency,
-		Http: app.HttpOptions{
-			Enabled: httpIsEnabled,
-			Port:    *httpPort,
-			Secure:  httpsIsEnabled,
-			Cert:    *certFile,
-			Key:     *keyFile,
-		},
-		Kafka: app.KafkaOptions{
-			Enabled:         kafkaIsEnabled,
-			Host:            *kafkaHost,
-			ConsumerGroupId: *kafkaConsumerGroupId,
-			RequestsTopic:   *requestsTopic,
-			ResponsesTopic:  *responsesTopic,
-		},
-	})
+	app := app.New(opts...)
 
+	// Create consumer topics if preferred
 	if createConsumerTopics {
-		kafkaOptions := kafka.UtilsOptions{
-			Host: *kafkaHost,
-		}
-
-		kafkaUtils, err := kafka.NewUtils(&kafkaOptions)
-		if err != nil {
-			golog.Fatalf("Faild to connect to the kafka %s", err.Error())
-		}
-		err = kafkaUtils.CreateTopics([]string{*requestsTopic}, 50) // partition number is hardcoded
-		if err != nil {
-			golog.Warningf("Failed to create kafka topics %s", err.Error())
-		}
+		createKafkaConsumerTopics(*kafkaHost, *requestsTopic)
 	}
 
 	// Run app

@@ -7,65 +7,67 @@ import (
 	"syscall"
 
 	"github.com/hop-/golog"
-	"github.com/hop-/pdf-service/internal/kafka"
-	"github.com/hop-/pdf-service/internal/reports"
+	"github.com/hop-/pdf-service/internal/generators"
+	"github.com/hop-/pdf-service/internal/services"
 )
 
-type HttpOptions struct {
-	Enabled bool
-	Port    int
-	Secure  bool
-	Cert    string
-	Key     string
-}
-
-type KafkaOptions struct {
-	Enabled         bool
-	Host            string
-	ConsumerGroupId string
-	RequestsTopic   string
-	ResponsesTopic  string
-}
-
-type Options struct {
-	EngineType  string
-	Concurrency uint8
-	Http        HttpOptions
-	Kafka       KafkaOptions
-}
-
-type ShutdownHandlerFunc = func()
-
 type App struct {
-	exitChan         chan os.Signal
-	concurrencyMutex chan bool
-	options          Options
-	shutdownHandlers []ShutdownHandlerFunc
-	consumer         *kafka.Consumer
-	producer         *kafka.Producer
-	isRunning        bool
-	wg               *sync.WaitGroup
+	exitChan  chan os.Signal
+	options   Options
+	services  []services.Service
+	generator *generators.ConcurrentPdfGenerator
+	wg        *sync.WaitGroup
 }
 
 // App constructor
-func NewApp(options Options) App {
+func NewApp(options Options) *App {
 	golog.Debugf("App options are: %+v", options)
 
-	o := App{
+	generator := generators.NewConcurrentPdfGenerator(options.Concurrency, options.EngineType)
+
+	srvs := []services.Service{}
+
+	if options.Http.Enabled {
+		srvs = append(srvs, services.NewHttpService(
+			options.Http.Port,
+			options.Http.Secure,
+			options.Http.Cert,
+			options.Http.Key,
+			generator,
+		))
+	}
+
+	if options.Kafka.Enabled {
+		srvs = append(srvs, services.NewKafkaService(
+			options.Kafka.Host,
+			options.Kafka.ConsumerGroupId,
+			options.Kafka.RequestsTopic,
+			options.Kafka.ResponsesTopic,
+			generator,
+		))
+	}
+
+	app := App{
 		make(chan os.Signal, 1),
-		make(chan bool, options.Concurrency),
 		options,
-		[]ShutdownHandlerFunc{},
-		nil,
-		nil,
-		true,
+		srvs,
+		generator,
 		new(sync.WaitGroup),
 	}
 
 	// Signal handling
-	signal.Notify(o.exitChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	signal.Notify(app.exitChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	return o
+	return &app
+}
+
+func New(optionModifiers ...OptionModifier) *App {
+	o := defaultOptions()
+	for _, omd := range optionModifiers {
+		omd(&o)
+	}
+
+	return NewApp(o)
 }
 
 // App start function
@@ -73,56 +75,24 @@ func (a *App) Start() {
 	// Graceful shutdown
 	go a.gracefulShutDownTracker()
 
-	if a.options.Kafka.Enabled {
+	for _, s := range a.services {
 		a.wg.Add(1)
-		go a.startKafka()
-	}
-	if a.options.Http.Enabled {
-		a.wg.Add(1)
-		go a.startHttp()
+		go func() {
+			defer a.wg.Done()
+			// This is available Go versions >= 1.22
+			s.Start()
+		}()
 	}
 
 	// Wait until all goroutines are done
 	a.wg.Wait()
 }
 
-func (a *App) generateReport(req KafkaRequest, engine string) (string, error) {
-	// Concurrent mutex lock
-	a.concurrencyMutex <- true
-
-	// Unlock
-	defer func() {
-		<-a.concurrencyMutex
-	}()
-
-	data, err := req.JsonData()
-	if err != nil {
-		return "", err
-	}
-
-	reportGenerator, err := reports.NewReportGenerator(req.Type, engine)
-	if err != nil {
-		return "", err
-	}
-
-	contentBase64, err := reportGenerator.GenerateBase64(data)
-	if err != nil {
-		return "", err
-	}
-
-	return contentBase64, err
-}
-
-func (a *App) OnShutdown(h ShutdownHandlerFunc) {
-	a.shutdownHandlers = append(a.shutdownHandlers, h)
-}
-
 func (a *App) gracefulShutDownTracker() {
 	<-a.exitChan
-	a.isRunning = false
 
-	// Iterate and run shutdown handlers
-	for i := range a.shutdownHandlers {
-		a.shutdownHandlers[i]()
+	// Iterate and stop all services
+	for _, s := range a.services {
+		s.Stop()
 	}
 }

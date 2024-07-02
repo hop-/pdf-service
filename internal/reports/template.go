@@ -207,30 +207,18 @@ func NewTemplate(name string) (*Template, error) {
 	return tmpl, nil
 }
 
-func (t *Template) GenerateCoverPage(marshaledData []byte) ([]byte, error) {
-	var data GeneralData
-	err := json.Unmarshal(marshaledData, &data)
-	if err != nil {
-		return nil, err
-	}
-
+func (t *Template) GenerateCoverPage(data GeneralData) ([]byte, error) {
 	var buf bytes.Buffer
 
-	err = t.coverTmpl.Execute(&buf, Data{Context: &t.context, Data: data})
+	err := t.coverTmpl.Execute(&buf, Data{Context: &t.context, Data: data})
 
 	return buf.Bytes(), err
 }
 
-func (t *Template) GenerateContent(marshaledData []byte) ([]byte, error) {
-	var data GeneralData
-	err := json.Unmarshal(marshaledData, &data)
-	if err != nil {
-		return nil, err
-	}
-
+func (t *Template) GenerateContent(data GeneralData) ([]byte, error) {
 	var buf bytes.Buffer
 
-	err = t.tmpl.Execute(&buf, Data{Context: &t.context, Data: data})
+	err := t.tmpl.Execute(&buf, Data{Context: &t.context, Data: data})
 
 	return buf.Bytes(), err
 }

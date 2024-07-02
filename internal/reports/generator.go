@@ -30,7 +30,7 @@ func NewReportGenerator(templateName string, engineName string) (*ReportGenerato
 	return &ReportGenerator{t, pdfg}, nil
 }
 
-func (r *ReportGenerator) GenerateBase64(data []byte) (string, error) {
+func (r *ReportGenerator) GenerateBase64(data GeneralData) (string, error) {
 	pdf, err := r.Generate(data)
 
 	return base64.StdEncoding.EncodeToString(pdf), err
@@ -40,7 +40,7 @@ func (r *ReportGenerator) HasCoverPage() bool {
 	return r.template.coverTmpl != nil
 }
 
-func (r *ReportGenerator) Generate(data []byte) ([]byte, error) {
+func (r *ReportGenerator) Generate(data GeneralData) ([]byte, error) {
 	content := [][]byte{}
 	if r.HasCoverPage() {
 		coverHtmlContent, err := r.template.GenerateCoverPage(data)
