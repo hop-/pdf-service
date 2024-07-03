@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Example Content</title>
+  <style>
+    @font-face {
+      font-family: robot-regular;
+      src: local("robot-regular"), url("{{.Context.RootUri}}/assets/fonts/Robot-Regular.ttf");
+    }
+
+    @font-face {
+      font-family: robot-medium;
+      src: local("robot-medium"), url("{{.Context.RootUri}}/assets/fonts/Robot-Medium.ttf");
+    }
+
+    @font-face {
+      font-family: robot-bold;
+      src: local("robot-bold"), url("{{.Context.RootUri}}/assets/fonts/Robot-Bold.ttf");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .h-m-3 {
+      font-family: robot-medium, sans-serif;
+      font-size: 2rem;
+    }
+
+    .h-r-5 {
+      font-family: robot-regular, sans-serif;
+      font-size: 18px;
+    }
+
+    .p-r {
+      font-family: robot-regular, sans-serif;
+      font-size: 16px;
+    }
+
+    .span-b {
+      font-family: robot-bold, sans-serif;
+      font-size: 16px;
+    }
+
+    .span-r-14 {
+      font-family: robot-regular, sans-serif;
+      font-size: 14px;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    .range {
+      margin: 40px 0;
+      width: 100%;
+      height: 10px;
+      background: -webkit-linear-gradient(0, rgb(220, 0, 26), rgb(255, 122, 0), rgb(254, 207, 26), rgb(128, 195, 20), rgb(0, 181, 37));
+      border-radius: 25px;
+      position: relative;
+    }
+
+    .range:before {
+      content: attr(data-max);
+      position: absolute;
+      top: -21px;
+      left: 0;
+      font-family: robot-medium, sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      color: #6b6f77;
+    }
+
+    .range:after {
+      content: attr(data-min);
+      position: absolute;
+      top: -21px;
+      right: 0;
+      font-family: robot-medium, sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      color: #6b6f77;
+    }
+
+    .range-score {
+      content: attr(data-score);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+
+      background-color: #ffffff;
+      border: 2px solid #6b6f77;
+    }
+
+    .range-score:after {
+      content: attr(data-score);
+
+      position: absolute;
+      top: 140%;
+      left: 50%;
+      transform: translateX(-50%);
+
+      color: #343740;
+
+      font-family: robot-medium, sans-serif;
+      font-weight: 500;
+
+      font-size: 12px;
+    }
+
+    .numerical-header {
+      margin: 0;
+      color: #00BFDC;
+      font-weight: 500;
+    }
+
+    .main-description {
+      color: #343740;
+      margin: 0;
+    }
+
+    .report {
+      /*width: 100%;*/
+      width: 210mm;
+      height: auto;
+      margin: 0 auto;
+      background-color: #ffffff;
+    }
+
+    .page {
+      width: 100%;
+      height: 277mm;
+      page-break-before: always;
+      padding: 0 40px 40px;
+      background-color: #ffffff;
+    }
+
+    .p-1 > .content {
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .p-1 > .content > p {
+      line-height: 26px;
+    }
+
+    .p-1 > .content > .tbl {
+      align-items: stretch;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      height: 100%;
+      width: 100%;
+    }
+
+    .p-1 > .content > .tbl > div {
+      flex: 25%;
+    }
+
+    .p-1 > .content > .tbl > div > div {
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 100%;
+      justify-content: space-evenly;
+      padding: 10px 20px;
+      width: 100%;
+      background-color: #f6f8fb;
+    }
+
+    .p-1 > .content > .tbl > div > div:first-child {
+      color: #6b6f77;
+    }
+
+    .p-1 > .content > .tbl > div > div:last-child {
+      color: #343740;
+    }
+
+    .p-1 > .content > .pie-chart {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .p-1 > .content > .pie-chart > div {
+      flex-shrink: 0;
+      width: 100%;
+    }
+
+    .p-1 > .content > .pie-chart > div:last-child {
+      background-color: #f6f8fb;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .p-1 > .content > .pie-chart-chart {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .p-1 > .content > .pie-chart-chart > div {
+      flex-shrink: 0;
+      width: 100%;
+    }
+
+    .p-1 > .content > .pie-chart-chart > div:first-child > p {
+      line-height: 26px;
+    }
+
+    .p-1 > .content > .pie-chart-chart > div:last-child {
+      background-color: #f6f8fb;
+      padding: 20px 10px;
+      border-radius: 8px;
+    }
+
+    .p-2 > .content {
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .p-2 > .content > .items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .p-2 > .content > .items > div {
+      flex-shrink: 0;
+      width: calc((100% - 2 * 8px) / 3);
+      height: 72px;
+    }
+
+    .p-2 > .content > .items > div > .item {
+      display: flex;
+      align-items: center;
+      border-radius: 10px;
+      gap: 6px 12px;
+      height: 72px;
+      padding: 9px 8px;
+      background-color: #f6f8fb;
+    }
+
+    .p-2 > .content > .items > div > .item > div:first-child {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      height: 37px;
+      width: 37px;
+      background-color: #00BFDC;
+    }
+
+    .p-2 > .content > .items > div > .item > div:first-child > img {
+      width: 23px;
+    }
+
+    .p-2 > .content > .items > div > .item > div:last-child {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .p-2 > .content > .items > div > .item > div:last-child > span:first-child {
+      color: #343740;
+      font-family: robot-bold,sans-serif;
+      font-size: 20px;
+    }
+
+    .p-2 > .content > .items > div > .item > div:last-child > span:last-child {
+      color: #6b6f77;
+      font-family: robot-regular,sans-serif;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="report">
+  <div class="page p-1">
+    <div class="content">
+      <h3 class="h-m-3 numerical-header">
+        <span>1. </span> Range Data Example
+      </h3>
+      <div class="pie-chart-chart">
+        <div>
+          <p class="p-r main-description">
+            This is a range data example.
+          </p>
+        </div>
+        <div>
+          <h5 class="h-r-5 numerical-header">Range Data</h5>
+          <div class="range" data-min="Good" data-max="Bad">
+            <div class="range-score" data-score={{.Data.range.score}} style="left: {{.Data.range.score}}%"></div>
+          </div>
+        </div>
+      </div>
+      <h3 class="h-m-3 numerical-header">
+        <span>2. </span> Table Like Example
+      </h3>
+      <p class="p-r main-description">
+        This is table like example.
+      </p>
+      <div class="tbl">
+        <div>
+          <div>
+            <span class="span-r-14">Cell One</span>
+            <span class="span-b">{{.Data.table.cell1}}</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <span class="span-r-14">Cell Two</span>
+            <span class="span-b">{{.Data.table.cell2}}</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <span class="span-r-14">Cell Three</span>
+            <span class="span-b">{{.Data.table.cell3}}</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <span class="span-r-14">First Cell in Second Row</span>
+            <span class="span-b">{{.Data.table.cell4}} year(s)</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <span class="span-r-14">Another Cell</span>
+            <span class="span-b">${{.Data.table.cell5}}</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <span class="span-r-14">Cell 3/2</span>
+            <span class="span-b">{{.Data.table.cell6}}%</span>
+          </div>
+        </div>
+        <div>
+          <div>
+            <span class="span-r-14">The Only Cell in Third Row</span>
+            <span class="span-b">{{.Data.table.cell7}} month(s)</span>
+          </div>
+        </div>
+      </div>
+      <h3 class="h-m-3 numerical-header">
+        <span>3. </span> Pie Chart Example
+      </h3>
+      <div class="pie-chart">
+        <div>
+          <p class="p-r main-description">
+            Here you can find a pie chart example
+          </p>
+        </div>
+        <div>
+          <div id="pie-chart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page p-2">
+    <div class="content">
+      <h3 class="h-m-3 numerical-header">
+        <span>4. </span> Table With Icons
+      </h3>
+      <div class="items">
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/umbrella.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.umbrella}}</span>
+              <span>Umbrella</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/music.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.music}}</span>
+              <span>Music</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/send.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.paperPlane}}</span>
+              <span>Paper Plane</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/sun.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.sun}}</span>
+              <span>Sun</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/trash.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.trash}}</span>
+              <span>Trash</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/truck.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.truck}}</span>
+              <span>Truck</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/watch.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.watch}}</span>
+              <span>Watch</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/user-check.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.goodGuy}}</span>
+              <span>Good Guy</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="item">
+            <div>
+              <img src="{{.Context.Root}}/assets/icons/wind.svg">
+            </div>
+            <div>
+              <span>{{.Data.iconValues.wind}}</span>
+              <span>Wind</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+  const pieChartOptions = {
+    series: [
+      {{.Data.pie.first}},
+      {{.Data.pie.second}},
+      {{.Data.pie.third}},
+      {{.Data.pie.fourth}},
+    ],
+    chart: {
+      animations: {
+        enabled: false
+      },
+      width: 420,
+      type: 'pie',
+    },
+    colors: ["#1111FF", "#0606AA", "#5555CA", "#0011FB"],
+    labels: ['First', 'Second', 'Third', 'Another Third'],
+    dataLabels: {
+      enabled: true,
+      formatter: function (val, opts) {
+        return opts.w.config.series[opts.seriesIndex]
+      },
+      textAnchor: 'middle',
+      style: {
+        fontFamily: "robot-regular, sans-serif",
+        textAlign: "center"
+      },
+    },
+    legend: {
+      show: true,
+      fontSize: "14px",
+      fontFamily: "robot-medium, sans-serif",
+      textAlign: "center",
+      horizontalAlign: 'left',
+    }
+  };
+
+  const pieChart = new ApexCharts(document.querySelector("#pie-chart"), pieChartOptions);
+  pieChart.render();
+</script>
+</body>
+</html>
