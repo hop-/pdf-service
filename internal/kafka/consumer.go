@@ -1,71 +1,61 @@
 package kafka
 
 import (
-	"time"
-
-	confluentkafka "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/hop-/golog"
 )
+
+type ConsumerHandle func(*Message)
 
 type ConsumerOptions struct {
 	Host    string
 	GroupId *string
 	Topics  []string
+	Handler ConsumerHandle
 }
 
 type Consumer struct {
-	consumer  *confluentkafka.Consumer
+	consumer  *SimpleConsumer
+	handler   ConsumerHandle
 	isRunning bool
 }
 
-func NewConsumer(options *ConsumerOptions) (*Consumer, error) {
-	config := confluentkafka.ConfigMap{
-		"bootstrap.servers": options.Host,
-		"auto.offset.reset": "latest",
+func NewConsumer(opts *ConsumerOptions) (*Consumer, error) {
+	simpleOpts := SimpleConsumerOptions{
+		Host:    opts.Host,
+		GroupId: opts.GroupId,
+		Topics:  opts.Topics,
 	}
 
-	if options.GroupId != nil {
-		config.SetKey("group.id", *options.GroupId)
-	}
-
-	c, err := confluentkafka.NewConsumer(&config)
+	consumer, err := NewSimpleConsumer(&simpleOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	c.SubscribeTopics(options.Topics, nil)
+	return &Consumer{
+		consumer:  consumer,
+		handler:   opts.Handler,
+		isRunning: false,
+	}, nil
+}
 
-	return &Consumer{c, true}, nil
+func (c *Consumer) Run() {
+	c.isRunning = true
+	// Message gethering loop
+	for c.isRunning {
+		message, err := c.consumer.ReceiveUntil()
+		if err != nil {
+			golog.Errorf("Failed to read message: %s", err.Error())
+			continue
+		} else if message == nil {
+			golog.Debug("Message is empty or nil")
+			continue
+		}
+
+		c.handler(message)
+	}
 }
 
 func (c *Consumer) Close() {
 	c.isRunning = false
 	c.consumer.Close()
-}
-
-func (c *Consumer) Receive() (*Message, error) {
-	msg, err := c.consumer.ReadMessage(time.Second)
-	if err == nil {
-		golog.Debugf("New message received on %s", msg.TopicPartition)
-
-		return &Message{msg.Value}, nil
-	} else if !err.(confluentkafka.Error).IsTimeout() {
-		return nil, err
-	}
-
-	return nil, nil
-}
-
-func (c *Consumer) ReceiveUntil() (*Message, error) {
-	for c.isRunning {
-		msg, err := c.Receive()
-		if msg != nil {
-			return msg, nil
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return nil, nil
 }

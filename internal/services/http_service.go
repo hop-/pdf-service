@@ -6,16 +6,14 @@ import (
 	"net/http"
 
 	"github.com/hop-/golog"
-	"github.com/hop-/pdf-service/internal/generators"
 	"github.com/hop-/pdf-service/internal/routes"
 )
 
 type HttpService struct {
-	srv       *http.Server
-	tls       bool
-	certFile  string
-	keyFile   string
-	generator *generators.ConcurrentPdfGenerator
+	srv      *http.Server
+	tls      bool
+	certFile string
+	keyFile  string
 }
 
 func NewHttpService(
