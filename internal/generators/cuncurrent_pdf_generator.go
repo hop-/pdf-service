@@ -1,17 +1,37 @@
 package generators
 
-import "github.com/hop-/pdf-service/internal/reports"
+import (
+	"sync"
+
+	"github.com/hop-/pdf-service/internal/reports"
+)
 
 type ConcurrentPdfGenerator struct {
 	concurrencyMutex chan bool
 	engine           string
 }
 
-func NewConcurrentPdfGenerator(concurrency uint8, engine string) *ConcurrentPdfGenerator {
-	return &ConcurrentPdfGenerator{
+var cpgLock = &sync.Mutex{}
+var cpgInstance *ConcurrentPdfGenerator
+
+func GetConcurrentPdfGenerator() *ConcurrentPdfGenerator {
+	if cpgInstance != nil {
+		return cpgInstance
+	}
+
+	return InitCpgInstnace(1, "chromedp")
+}
+
+func InitCpgInstnace(concurrency uint8, engine string) *ConcurrentPdfGenerator {
+	cpgLock.Lock()
+	defer cpgLock.Unlock()
+
+	cpgInstance = &ConcurrentPdfGenerator{
 		concurrencyMutex: make(chan bool, concurrency),
 		engine:           engine,
 	}
+
+	return cpgInstance
 }
 
 func (g *ConcurrentPdfGenerator) Generate(template string, data map[string]any) (string, error) {

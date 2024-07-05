@@ -7,6 +7,7 @@ import (
 
 	"github.com/hop-/golog"
 	"github.com/hop-/pdf-service/internal/generators"
+	"github.com/hop-/pdf-service/internal/routes"
 )
 
 type HttpService struct {
@@ -22,31 +23,34 @@ func NewHttpService(
 	tls bool,
 	certFile string,
 	keyFile string,
-	generator *generators.ConcurrentPdfGenerator,
 ) *HttpService {
 	addr := fmt.Sprintf(":%d", port)
 
-	var router http.Handler
-	// TODO: add router
-
+	router := routes.NewRouter()
 	srv := http.Server{Addr: addr, Handler: router}
 
 	return &HttpService{
-		srv:       &srv,
-		tls:       tls,
-		certFile:  certFile,
-		keyFile:   keyFile,
-		generator: generator,
+		srv:      &srv,
+		tls:      tls,
+		certFile: certFile,
+		keyFile:  keyFile,
 	}
 }
 
 func (s *HttpService) Start() {
 	if s.tls {
 		golog.Info("Listening for HTTPS requests on", s.srv.Addr)
-		s.srv.ListenAndServeTLS(s.certFile, s.keyFile)
+
+		err := s.srv.ListenAndServeTLS(s.certFile, s.keyFile)
+		if err != nil {
+			golog.Errorf("Failed to start HTTPS service: %s", err.Error())
+		}
 	} else {
 		golog.Info("Listening for HTTP requests on", s.srv.Addr)
-		s.srv.ListenAndServe()
+		err := s.srv.ListenAndServe()
+		if err != nil {
+			golog.Errorf("Failed to start HTTP service: %s", err.Error())
+		}
 	}
 }
 

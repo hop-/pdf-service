@@ -1,5 +1,5 @@
 {
-  "name": "Example Report",
+  "name": "exampleDoc",
   "cover": "cover.go.html",
   "templates": ["index.go.html"]
 }

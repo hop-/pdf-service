@@ -27,7 +27,6 @@ type KafkaService struct {
 	consumer  *kafka.Consumer
 	producer  *kafka.Producer
 	isRunning bool
-	generator *generators.ConcurrentPdfGenerator
 }
 
 func NewKafkaService(
@@ -35,7 +34,6 @@ func NewKafkaService(
 	consumerGroupId string,
 	requestsTopic string,
 	responsesTopic string,
-	generator *generators.ConcurrentPdfGenerator,
 ) *KafkaService {
 	// Create Consumer
 	consumerOptions := kafka.ConsumerOptions{
@@ -64,7 +62,6 @@ func NewKafkaService(
 		consumer:  consumer,
 		producer:  prodcuer,
 		isRunning: false,
-		generator: generator,
 	}
 }
 
@@ -99,7 +96,7 @@ func (s *KafkaService) Start() {
 			// Generate report
 			status := ResponseStatusPassed
 
-			content, err := s.generator.Generate(req.Type, req.Data)
+			content, err := generators.GetConcurrentPdfGenerator().Generate(req.Type, req.Data)
 			if err != nil {
 				status = ResponseStatusFailed
 				golog.Errorf("Failed to generate report: %s", err)

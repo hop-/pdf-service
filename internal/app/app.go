@@ -12,18 +12,17 @@ import (
 )
 
 type App struct {
-	exitChan  chan os.Signal
-	options   Options
-	services  []services.Service
-	generator *generators.ConcurrentPdfGenerator
-	wg        *sync.WaitGroup
+	exitChan chan os.Signal
+	options  Options
+	services []services.Service
+	wg       *sync.WaitGroup
 }
 
 // App constructor
 func NewApp(options Options) *App {
 	golog.Debugf("App options are: %+v", options)
 
-	generator := generators.NewConcurrentPdfGenerator(options.Concurrency, options.EngineType)
+	generators.InitCpgInstnace(options.Concurrency, options.EngineType)
 
 	srvs := []services.Service{}
 
@@ -33,7 +32,6 @@ func NewApp(options Options) *App {
 			options.Http.Secure,
 			options.Http.Cert,
 			options.Http.Key,
-			generator,
 		))
 	}
 
@@ -43,7 +41,6 @@ func NewApp(options Options) *App {
 			options.Kafka.ConsumerGroupId,
 			options.Kafka.RequestsTopic,
 			options.Kafka.ResponsesTopic,
-			generator,
 		))
 	}
 
@@ -51,7 +48,6 @@ func NewApp(options Options) *App {
 		make(chan os.Signal, 1),
 		options,
 		srvs,
-		generator,
 		new(sync.WaitGroup),
 	}
 
