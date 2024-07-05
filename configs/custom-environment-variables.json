@@ -16,7 +16,7 @@
     "createCousumerTopics": "PDF_SERVICE_CREATE_CONSUMER_TOPICS",
     "topic": {
       "requests": "PDF_SERVICE_KAFKA_REQUESTS_TOPIC",
-      "responses": "PDF_SERVICE_KAFKA_RESPONSES_TOPICs"
+      "responses": "PDF_SERVICE_KAFKA_RESPONSES_TOPIC"
     }
   },
   "engine": "REPORT_SERVICE_ENGINE"
