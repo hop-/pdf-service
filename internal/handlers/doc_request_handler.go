@@ -62,7 +62,7 @@ func NewDocRequestHandler(responsesTopic string) kafka.ConsumerHandle {
 			// Generate report
 			status := ResponseStatusPassed
 
-			content, err := generators.GetConcurrentPdfGenerator().Generate(req.Type, req.Data)
+			content, err := generators.GetConcurrentPdfGenerator().GenerateBase64(req.Type, req.Data)
 			if err != nil {
 				status = ResponseStatusFailed
 				golog.Errorf("Failed to generate report: %s", err)

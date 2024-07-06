@@ -6,3 +6,5 @@ Dockerfile
 bin
 tests
 build
+LICENSE
+README.md
