@@ -1,16 +1,16 @@
 # Pdf-Service
 
-A standalone service to generate pdf docs from templates.
+A standalone service to generate PDF documents from templates.
 
-It uses html templates to generate html docs and html to pdf engines to convert html to pdf.
+It uses HTML templates to generate HTML documents and HTML to PDF engines to convert HTML to PDF.
 
 ## Templates
 
-All templates are stored in `templates` directory.
+All templates are stored in the `templates` directory.
 
-Each template is also a directory which contains template files and configurations.
+Each template is also a directory, which contains template files and configurations.
 
-On start-up the service will go through all directories under the `templates` directory and load them as templaates if they contain `templaterc.json` configuration file.
+On start-up, the service will go through all directories under the `templates` directory and load them as templates if they contain a `templaterc.json` configuration file.
 
 It uses structured [go html templates](https://pkg.go.dev/html/template) and [JSON](https://www.json.org/json-en.html) configuration files.
 
@@ -18,9 +18,9 @@ See examples in [code/templates](https://github.com/hop-/pdf-service/tree/master
 
 ### Template Configuration File
 
-Each template direcory sould contain `templaterc.json` configuration file.
+Each template directory should contain a `templaterc.json` configuration file.
 
-The content of the configuration file is the following.
+The content of the configuration file is the following:
 
 ``` json
 {
@@ -33,27 +33,27 @@ The content of the configuration file is the following.
 }
 ```
 
-Some of this fields can be omited.
+Some of these fields can be omitted.
 
 ## HTML to PDF Engines
 
-There are two engines currently integratied into the service `wkhtmltopdf` and `chromedp`
+There are two engines currently integrated into the service: `wkhtmltopdf` and `chromedp`.
 
 ### Wkhtmltopdf
 
-This engine uses `wkhtmltopdf` librariy to convert html to pdf.
+This engine uses `wkhtmltopdf` library to convert HTML to PDF.
 
-This is the official links of the library: [wkhtmltopdf.org](https://wkhtmltopdf.org/), [guthub](https://github.com/wkhtmltopdf/wkhtmltopdf)
+This is the official links to the library: [wkhtmltopdf.org](https://wkhtmltopdf.org/), [github](https://github.com/wkhtmltopdf/wkhtmltopdf)
 
 ### Chromedb
 
-This engine uses headless `chrome` session to visualize the generated html document and then prints as pdf.
+This engine uses a headless `chrome` session to visualize the generated HTML document, which is then printed as a PDF.
 
-Offical links: [go package](https://pkg.go.dev/github.com/chromedp/chromedp),[github](https://github.com/chromedp/chromedp)
+Official links: [go package](https://pkg.go.dev/github.com/chromedp/chromedp), [github](https://github.com/chromedp/chromedp)
 
 ## Env Valiables
 
-There are some environment variables which can be used to configure the service
+There are some environment variables that can be used to configure the service.
 
 * `PDF_SERVICE_ROOT` - the root directory where can be found service assets (`configs` and `templates`). Default is the current direcotry
 * `PDF_SERVICE_CONCURRENCY` - Max number of cuncurrent workers which can be spawned to generate the pdf docs. Default is `4`
