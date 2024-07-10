@@ -1,6 +1,8 @@
 package kafka
 
 import (
+	"sync"
+
 	confluentkafka "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
@@ -10,6 +12,7 @@ type ProducerOptions struct {
 }
 
 type Producer struct {
+	mu       *sync.Mutex
 	producer *confluentkafka.Producer
 	topic    confluentkafka.TopicPartition
 	// TODO: add delivery channel?
@@ -30,10 +33,13 @@ func NewProducer(options *ProducerOptions) (*Producer, error) {
 		Partition: confluentkafka.PartitionAny,
 	}
 
-	return &Producer{p, topic}, nil
+	return &Producer{&sync.Mutex{}, p, topic}, nil
 }
 
 func (p *Producer) Send(message *Message) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	return p.producer.Produce(&confluentkafka.Message{
 		TopicPartition: p.topic,
 		Value:          message.message,
@@ -41,5 +47,8 @@ func (p *Producer) Send(message *Message) error {
 }
 
 func (p *Producer) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.producer.Close()
 }

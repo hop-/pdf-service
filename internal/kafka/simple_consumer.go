@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"sync"
 	"time"
 
 	confluentkafka "github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -14,6 +15,7 @@ type SimpleConsumerOptions struct {
 }
 
 type SimpleConsumer struct {
+	mu        *sync.Mutex
 	consumer  *confluentkafka.Consumer
 	isRunning bool
 }
@@ -35,15 +37,21 @@ func NewSimpleConsumer(options *SimpleConsumerOptions) (*SimpleConsumer, error) 
 
 	c.SubscribeTopics(options.Topics, nil)
 
-	return &SimpleConsumer{c, true}, nil
+	return &SimpleConsumer{&sync.Mutex{}, c, true}, nil
 }
 
 func (c *SimpleConsumer) Close() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.isRunning = false
 	c.consumer.Close()
 }
 
 func (c *SimpleConsumer) Receive() (*Message, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	msg, err := c.consumer.ReadMessage(time.Second)
 	if err == nil {
 		golog.Debugf("New message received on %s", msg.TopicPartition)

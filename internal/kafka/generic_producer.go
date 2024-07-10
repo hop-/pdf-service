@@ -8,6 +8,7 @@ import (
 )
 
 type GenericProducer struct {
+	mu       *sync.Mutex
 	producer *confluentkafka.Producer
 }
 
@@ -31,7 +32,7 @@ func InitProducerOnce(host string) error {
 		return err
 	}
 
-	producerInstance = &GenericProducer{p}
+	producerInstance = &GenericProducer{&sync.Mutex{}, p}
 
 	return nil
 }
@@ -45,6 +46,9 @@ func GetProducer() *GenericProducer {
 }
 
 func (p *GenericProducer) Send(topic string, message *Message) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	topicPartition := confluentkafka.TopicPartition{
 		Topic:     &topic,
 		Partition: confluentkafka.PartitionAny,
@@ -57,5 +61,8 @@ func (p *GenericProducer) Send(topic string, message *Message) error {
 }
 
 func (p *GenericProducer) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.producer.Close()
 }
